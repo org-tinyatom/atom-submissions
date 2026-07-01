@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Color Grades</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app">
+      <header class="topbar">
+        <div class="topbar__brand">
+          <p class="meta" id="meta"></p>
+          <h1>Color Grades</h1>
+          <p class="tagline">Drop one photo and get ten distinct color grades — all processed locally on your device.</p>
+        </div>
+        <div class="topbar__actions">
+          <button type="button" class="btn btn--ghost" id="clear-btn" hidden>Clear</button>
+        </div>
+      </header>
+
+      <main class="workspace">
+        <section class="upload-panel" id="upload-panel" aria-labelledby="upload-heading">
+          <div
+            class="dropzone"
+            id="dropzone"
+            tabindex="0"
+            role="button"
+            aria-labelledby="upload-heading upload-hint"
+          >
+            <input
+              type="file"
+              id="file-input"
+              accept="image/jpeg,image/png,image/gif,image/webp,image/bmp,image/*"
+              hidden
+            />
+            <div class="dropzone__icon" aria-hidden="true">
+              <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                <rect x="4" y="8" width="32" height="24" rx="3" stroke="currentColor" stroke-width="1.5" />
+                <circle cx="14" cy="17" r="3" stroke="currentColor" stroke-width="1.5" />
+                <path d="M8 28l8-8 6 6 4-4 6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </div>
+            <h2 id="upload-heading">Upload an image</h2>
+            <p id="upload-hint" class="dropzone__hint">Drag and drop here, or click to browse · JPEG, PNG, GIF, WebP</p>
+          </div>
+        </section>
+
+        <section class="results" id="results" hidden aria-live="polite">
+          <p class="status" id="status" hidden>Generating grades…</p>
+
+          <figure class="original-card">
+            <figcaption class="original-card__label">Original</figcaption>
+            <img id="original-img" class="original-card__img" alt="" />
+          </figure>
+
+          <div class="grades-grid" id="grades-grid" aria-label="Color grades"></div>
+
+          <p class="file-meta">
+            <span id="file-name" class="file-meta__name"></span>
+            <span id="file-size" class="file-meta__size"></span>
+          </p>
+        </section>
+      </main>
+    </div>
+    <script type="module" src="app.js"></script>
+  </body>
+</html>
