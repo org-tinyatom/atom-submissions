@@ -1,0 +1,8 @@
+{
+  "id": "smoke-atom",
+  "name": "Smoke Atom",
+  "version": "0.0.1",
+  "entry": "index.html",
+  "capabilities": [],
+  "distribution": "public"
+}
