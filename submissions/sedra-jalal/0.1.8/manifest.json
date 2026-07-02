@@ -1,0 +1,8 @@
+{
+  "id": "sedra-jalal",
+  "name": "Color Grades",
+  "version": "0.1.8",
+  "entry": "index.html",
+  "capabilities": [],
+  "distribution": "public"
+}
