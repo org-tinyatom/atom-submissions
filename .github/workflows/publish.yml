@@ -1,0 +1,87 @@
+# TEMPLATE — copy into org-tinyatom/atom-submissions as .github/workflows/publish.yml (see README.md).
+#
+# Post-merge publish for the official TinyAtom catalog. SECURITY: this workflow holds the owner signing
+# key, so it triggers ONLY on push to main (a merged, human-reviewed submission) — never on
+# pull_request, where a fork could exfiltrate secrets or publish unreviewed code.
+#
+# Required repository secrets:
+#   TINYATOM_OWNER_PRIVATE_KEY_PEM  — the owner Ed25519 PRIVATE key (PEM text). Signs manifests + catalog.
+#   CATALOG_PUSH_TOKEN              — a token with contents:write on org-tinyatom/atoms-catalog.
+name: Publish merged atoms
+
+on:
+  push:
+    branches: [main]
+    paths: ['submissions/**']
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out submissions
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      # The publish tooling lives in the TinyAtom app repo. PLACEHOLDER: adjust the slug/ref if yours differ.
+      - name: Check out TinyAtom tooling
+        uses: actions/checkout@v4
+        with:
+          repository: org-tinyatom/tinyatom
+          path: tinyatom
+          token: ${{ secrets.CATALOG_PUSH_TOKEN }}
+
+      - name: Check out the catalog repo
+        uses: actions/checkout@v4
+        with:
+          repository: org-tinyatom/atoms-catalog
+          path: atoms-catalog
+          token: ${{ secrets.CATALOG_PUSH_TOKEN }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      # atom-publish.mjs needs only the `tar` package; skip a full app install.
+      - name: Install script dependency
+        run: npm install --no-save tar
+        working-directory: tinyatom
+
+      - name: Publish each merged submission
+        env:
+          TINYATOM_OWNER_PRIVATE_KEY_PEM: ${{ secrets.TINYATOM_OWNER_PRIVATE_KEY_PEM }}
+          GH_TOKEN: ${{ secrets.CATALOG_PUSH_TOKEN }}
+        run: |
+          set -euo pipefail
+          changed=$(git diff --name-only "${{ github.event.before }}" "${{ github.sha }}" -- submissions/ \
+            | cut -d/ -f1-2 | sort -u)
+          [ -n "$changed" ] || { echo "No submission changes."; exit 0; }
+          for dir in $changed; do
+            [ -f "$dir/manifest.json" ] || continue
+            id=$(node -p "JSON.parse(require('fs').readFileSync('$dir/manifest.json','utf8')).id")
+            version=$(node -p "JSON.parse(require('fs').readFileSync('$dir/manifest.json','utf8')).version")
+            tag="$id-v$version"
+            asset="$id-$version.tgz"
+            package_url="https://github.com/org-tinyatom/atoms-catalog/releases/download/$tag/$asset"
+            node tinyatom/scripts/publish-atom.mjs \
+              --workspace "$dir" \
+              --catalog atoms-catalog/catalog.json \
+              --package-dir dist \
+              --package-url "$package_url"
+            gh release create "$tag" --repo org-tinyatom/atoms-catalog --title "$tag" --notes "Automated publish." || true
+            gh release upload "$tag" "dist/$asset" --repo org-tinyatom/atoms-catalog --clobber
+          done
+
+      - name: Push the signed catalog
+        working-directory: atoms-catalog
+        run: |
+          set -euo pipefail
+          git add catalog.json catalog.json.sig
+          if git diff --cached --quiet; then echo "Catalog unchanged."; exit 0; fi
+          git config user.name "tinyatom-publish"
+          git config user.email "publish@tinyatom.invalid"
+          git commit -m "Publish merged atoms"
+          git push

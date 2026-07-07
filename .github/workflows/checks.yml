@@ -1,0 +1,46 @@
+# TEMPLATE — copy into org-tinyatom/atom-submissions as .github/workflows/checks.yml (see README.md).
+#
+# Advisory checks on submission pull requests. This job holds NO secrets and never approves —
+# a human owner still reviews and merges every submission. A red check is information, not a gate
+# the submitter can't argue with.
+name: Submission checks
+
+on:
+  pull_request:
+    paths: ['submissions/**']
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the pull request
+        uses: actions/checkout@v4
+
+      # The checks script is dependency-free plain node. PLACEHOLDER: adjust the slug/ref if yours differ.
+      - name: Check out TinyAtom tooling
+        uses: actions/checkout@v4
+        with:
+          repository: org-tinyatom/tinyatom
+          path: tinyatom
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Run advisory checks on changed submissions
+        run: |
+          set -euo pipefail
+          git fetch origin "${{ github.base_ref }}" --depth=1
+          changed=$(git diff --name-only "origin/${{ github.base_ref }}"...HEAD -- submissions/ \
+            | cut -d/ -f1-2 | sort -u)
+          [ -n "$changed" ] || { echo "No submission changes."; exit 0; }
+          status=0
+          for dir in $changed; do
+            [ -d "$dir" ] || continue
+            echo "== $dir"
+            node tinyatom/scripts/check-atom-submission.mjs "$dir" || status=1
+          done
+          exit $status
