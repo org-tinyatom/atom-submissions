@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "runtimes": [
+    {
+      "id": "ffmpeg",
+      "reason": "Cut suggested clip ranges, extract WAV audio for transcription, scale/crop to 1080x1920 vertical, and burn captions into exported clips via window.tinyAtom.media.runFfmpeg."
+    },
+    {
+      "id": "ffprobe",
+      "reason": "Read duration, resolution, and stream info of imported videos via window.tinyAtom.media.runFfprobe."
+    },
+    {
+      "id": "whisper-cli",
+      "reason": "Local timestamped transcription of extracted audio via window.tinyAtom.speech.transcribe with format json."
+    },
+    {
+      "id": "whisper-model",
+      "reason": "Model weights required by whisper-cli for window.tinyAtom.speech.transcribe."
+    }
+  ]
+}
