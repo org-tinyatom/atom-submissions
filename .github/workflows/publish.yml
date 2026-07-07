@@ -12,6 +12,7 @@ on:
   push:
     branches: [main]
     paths: ['submissions/**']
+  workflow_dispatch: {}   # manual "(re)publish everything" — e.g. after fixing the workflow
 
 permissions:
   contents: read
@@ -46,11 +47,17 @@ jobs:
           GH_TOKEN: ${{ secrets.CATALOG_PUSH_TOKEN }}
         run: |
           set -euo pipefail
-          before="${{ github.event.before }}"
-          # A first push (or zeroed/unreachable before) has no valid parent SHA; fall back to HEAD~1.
-          git cat-file -e "${before}^{commit}" 2>/dev/null || before="$(git rev-parse HEAD~1)"
-          changed=$(git diff --name-only "$before" "${{ github.sha }}" -- submissions/ \
-            | cut -d/ -f1-2 | sort -u)
+          # Submissions live at submissions/<id>/<version>/, so the atom dir is 3 path segments deep.
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            # Manual run: (re)publish every submission version directory.
+            changed=$(find submissions -mindepth 2 -maxdepth 2 -type d | sort -u)
+          else
+            before="${{ github.event.before }}"
+            # A first push (or zeroed/unreachable before) has no valid parent SHA; fall back to HEAD~1.
+            git cat-file -e "${before}^{commit}" 2>/dev/null || before="$(git rev-parse HEAD~1)"
+            changed=$(git diff --name-only "$before" "${{ github.sha }}" -- submissions/ \
+              | cut -d/ -f1-3 | sort -u)
+          fi
           [ -n "$changed" ] || { echo "No submission changes."; exit 0; }
           for dir in $changed; do
             [ -f "$dir/manifest.json" ] || continue
@@ -72,8 +79,9 @@ jobs:
         working-directory: atoms-catalog
         run: |
           set -euo pipefail
-          git add catalog.json catalog.json.sig
-          if git diff --cached --quiet; then echo "Catalog unchanged."; exit 0; fi
+          git add catalog.json
+          if [ -f catalog.json.sig ]; then git add catalog.json.sig; fi
+          if git diff --cached --quiet; then echo "Nothing published; catalog unchanged."; exit 0; fi
           git config user.name "tinyatom-publish"
           git config user.email "publish@tinyatom.invalid"
           git commit -m "Publish merged atoms"

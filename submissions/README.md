@@ -3,7 +3,7 @@
 Open a pull request that adds a single directory here:
 
 ```text
-submissions/<atom-id>/
+submissions/<atom-id>/<version>/
   manifest.json      required — id, name, version (MAJOR.MINOR.PATCH), entry, capabilities
   index.html         your entry file and any other assets it needs
   ...
