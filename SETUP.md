@@ -1,8 +1,9 @@
 # Pipeline setup (owner only)
 
-The two workflows in `.github/workflows/` are installed. Before they can publish, an **owner** must add
-what an agent cannot: secrets, the signing key, and the tooling source. Nothing here should ever be given
-to a fork pull request.
+The two workflows in `.github/workflows/` are installed and the publish/check tooling is vendored under
+`tools/` (self-contained — CI checks out no external repo). Before the pipeline can publish, an **owner**
+must add what an agent cannot: the signing key and two secrets. Nothing here should ever be given to a fork
+pull request.
 
 ## 1. Owner signing keypair
 
@@ -19,21 +20,13 @@ Generate the TinyAtom owner Ed25519 keypair (in the app repo: `node scripts/gene
 - `TINYATOM_OWNER_PRIVATE_KEY_PEM` — the private key from step 1. Signs each atom's `manifest.sig` and the
   catalog's `catalog.json.sig`.
 - `CATALOG_PUSH_TOKEN` — a fine-grained token with `contents: write` on `org-tinyatom/atoms-catalog`
-  (create Releases + push the signed catalog). If the app/tooling repo is private, the token also needs
-  read access to it.
+  (to create Releases + push the signed catalog).
 
-## 3. The tooling source (publish.yml checks it out)
+## 3. The tooling (vendored — no action needed)
 
-`publish.yml` runs `node tinyatom/scripts/publish-atom.mjs`, which reads the atom capability list from
-`src/types/atom-ipc.ts` — so the workflow checks out the **TinyAtom app repo** at `org-tinyatom/tinyatom`.
-That repo does not exist yet. Do ONE of:
-
-- push the TinyAtom app repo to `org-tinyatom/tinyatom` (private is fine — `CATALOG_PUSH_TOKEN` reads it), or
-- adjust the `repository:` slug in both workflows to wherever the app repo lives, or
-- ask to have a minimal `tinyatom-publish-tools` repo carved out (just `scripts/` + `src/types/atom-ipc.ts`)
-  if you'd rather not expose the whole app.
-
-`checks.yml` also checks out the same repo for `scripts/check-atom-submission.mjs`.
+The publish + check scripts live in `tools/` in this repo, so nothing external is checked out. They are
+copies of the app's `scripts/`; keep them in sync per `tools/README.md` when the app's capability list or
+signing logic changes.
 
 ## 4. Branch protection
 
