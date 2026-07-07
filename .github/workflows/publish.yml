@@ -23,7 +23,7 @@ jobs:
       - name: Check out submissions (with the vendored tools/)
         uses: actions/checkout@v4
         with:
-          fetch-depth: 2
+          fetch-depth: 0
 
       - name: Check out the catalog repo
         uses: actions/checkout@v4
@@ -46,7 +46,10 @@ jobs:
           GH_TOKEN: ${{ secrets.CATALOG_PUSH_TOKEN }}
         run: |
           set -euo pipefail
-          changed=$(git diff --name-only "${{ github.event.before }}" "${{ github.sha }}" -- submissions/ \
+          before="${{ github.event.before }}"
+          # A first push (or zeroed/unreachable before) has no valid parent SHA; fall back to HEAD~1.
+          git cat-file -e "${before}^{commit}" 2>/dev/null || before="$(git rev-parse HEAD~1)"
+          changed=$(git diff --name-only "$before" "${{ github.sha }}" -- submissions/ \
             | cut -d/ -f1-2 | sort -u)
           [ -n "$changed" ] || { echo "No submission changes."; exit 0; }
           for dir in $changed; do
