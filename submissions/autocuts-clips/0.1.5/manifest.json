@@ -1,0 +1,15 @@
+{
+  "id": "autocuts-clips",
+  "name": "Autocuts Clips",
+  "version": "0.1.5",
+  "entry": "index.html",
+  "capabilities": [
+    "terminal",
+    "clipboard",
+    "filesystem",
+    "storage",
+    "media",
+    "speech"
+  ],
+  "distribution": "public"
+}
