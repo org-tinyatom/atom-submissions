@@ -1,0 +1,1809 @@
+/* ============================================================================
+   Rekorder — styles.css
+   Token block is the single source of truth for color/font/radius. Component
+   rules below reference only var(--atom-*); no hardcoded colors outside :root.
+   ============================================================================ */
+
+:root {
+  color-scheme: light dark;
+
+  /* Surfaces */
+  --atom-bg: #1e1e1e;
+  --atom-surface-terminal: #181818;
+  --atom-panel: #252526;
+  --atom-panel-hover: #2a2d2e;
+  --atom-well: #1b1b1b;
+  --atom-menu: #252526;
+
+  /* Ink */
+  --atom-ink-bright: #d4d4d4;
+  --atom-ink: #cccccc;
+  --atom-ink-soft: #a6a6a6;
+  --atom-muted: #7a7a7a;
+
+  /* Accent */
+  --atom-accent: #0078d4;
+  --atom-accent-hover: #0e639c;
+  --atom-accent-ink: #ffffff;
+  --atom-accent-selection: rgba(0, 120, 212, 0.32);
+
+  /* Status */
+  --atom-success: #89d185;
+  --atom-danger: #f14c4c;
+  --atom-warn: #cca700;
+
+  /* Lines */
+  --atom-line: #2b2b2b;
+  --atom-line-4: #464646;
+
+  /* Added semantic tokens (see LLD §10 / PRD Theme) */
+  --atom-overlay-bg: rgba(0, 0, 0, 0.55);
+  --atom-danger-ink: #ffffff;
+  --atom-focus-glow: rgba(0, 120, 212, 0.28);
+
+  /* Stage tokens. The compositor bakes these into the recorded video, so they
+     are deliberately theme-independent — a recording must not change with the
+     host's light/dark setting. No light-mode override below. */
+  --atom-stage-bg: #101010;
+  --atom-stage-scrim: rgba(16, 16, 16, 0.44);
+  --atom-camera-outline: rgba(255, 255, 255, 0.92);
+  /* Ink for text sitting ON the stage or an overlay. Those surfaces stay dark in
+     both themes, so this must not follow --atom-ink-bright into light mode. */
+  --atom-overlay-ink: #ffffff;
+
+  /* Letterbox behind the library's <video>. Like the stage tokens it is deliberately
+     theme-independent: a video frame reads correctly against dark bars in both themes. */
+  --atom-player-bg: #101010;
+
+  /* Shape & type */
+  --atom-radius-sm: 5px;
+  --atom-radius-md: 8px;
+  --atom-radius-lg: 12px;
+  --atom-font-sans: ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --atom-font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, 'JetBrains Mono', Menlo, monospace;
+
+  /* Layout metrics */
+  --atom-sidebar-w: 232px;
+  /* One height for the sidebar brand and every view header, so their bottom
+     borders form a single line across the app (border-box: 30px mark + 2rem). */
+  --atom-header-h: calc(30px + 2rem + 1px);
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --atom-bg: #f3f3f3;
+    --atom-surface-terminal: #ffffff;
+    --atom-panel: #f8f8f8;
+    --atom-panel-hover: #eeeeee;
+    --atom-well: #ffffff;
+    --atom-menu: #ffffff;
+    --atom-ink-bright: #1f1f1f;
+    --atom-ink: #333333;
+    --atom-ink-soft: #5f5f5f;
+    --atom-muted: #737373;
+    --atom-line: #d4d4d4;
+    --atom-line-4: #b8b8b8;
+    --atom-overlay-bg: rgba(0, 0, 0, 0.4);
+  }
+}
+
+/* ---------------------------------------------------------------- Reset -- */
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--atom-font-sans);
+  font-size: 14px;
+  line-height: 1.5;
+  background: var(--atom-bg);
+  color: var(--atom-ink);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Slim, theme-following scrollbars on every scroll container. The atom only runs
+   in TinyAtom's Chromium, so the -webkit pseudo-elements are the reliable route
+   (and unlike `scrollbar-width: thin` they allow a rounded thumb). Tokens keep
+   them correct in both themes. */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--atom-line-4);
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--atom-muted);
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+::selection {
+  background: var(--atom-accent-selection);
+}
+
+:focus-visible {
+  outline: 2px solid var(--atom-accent);
+  outline-offset: 2px;
+  border-radius: var(--atom-radius-sm);
+}
+
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+/* -------------------------------------------------------------- App grid -- */
+
+.app {
+  display: grid;
+  grid-template-columns: var(--atom-sidebar-w) 1fr;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* --------------------------------------------------------------- Sidebar -- */
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--atom-panel);
+  border-right: 1px solid var(--atom-line);
+}
+
+.sidebar__brand {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 0.6rem;
+  height: var(--atom-header-h);
+  padding: 0 1.1rem;
+  border-bottom: 1px solid var(--atom-line);
+}
+
+.sidebar__mark {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--atom-radius-md);
+  background: var(--atom-accent);
+  color: var(--atom-accent-ink);
+  flex: none;
+}
+
+.sidebar__mark svg {
+  width: 18px;
+  height: 18px;
+}
+
+.sidebar__name {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--atom-ink-bright);
+  letter-spacing: 0.01em;
+}
+
+.sidebar__nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 0.7rem 0.6rem;
+  overflow-y: auto;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  width: 100%;
+  padding: 0.55rem 0.7rem;
+  border-radius: var(--atom-radius-md);
+  color: var(--atom-ink-soft);
+  text-align: left;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.nav-item svg {
+  width: 18px;
+  height: 18px;
+  flex: none;
+}
+
+.nav-item__label {
+  flex: 1;
+  font-weight: 500;
+}
+
+.nav-item:hover {
+  background: var(--atom-panel-hover);
+  color: var(--atom-ink);
+}
+
+.nav-item.is-active {
+  background: var(--atom-panel-hover);
+  color: var(--atom-ink-bright);
+}
+
+.nav-item__badge {
+  min-width: 20px;
+  height: 20px;
+  padding: 0 0.35rem;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--atom-accent);
+  color: var(--atom-accent-ink);
+  font-size: 0.72rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.sidebar__footer {
+  margin-top: auto;
+  padding: 0.8rem 1.1rem;
+  border-top: 1px solid var(--atom-line);
+  color: var(--atom-muted);
+  font-family: var(--atom-font-mono);
+  font-size: 0.72rem;
+}
+
+/* ------------------------------------------------------------------ Main -- */
+
+.main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  background: var(--atom-bg);
+}
+
+/* Persistent inline banner slot (notices.banner) */
+.banner-region:empty {
+  display: none;
+}
+
+.banner {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem 1.25rem;
+  border-bottom: 1px solid var(--atom-line);
+  background: var(--atom-panel);
+  color: var(--atom-ink);
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
+/* Direct child only: the banner's status glyph. The action buttons and the close
+   control own their own icon size and color — a descendant selector here would
+   repaint a primary button's icon in the status color and lose it on the accent fill. */
+.banner > svg {
+  width: 22px;
+  height: 22px;
+  flex: none;
+}
+
+.banner--info > svg {
+  color: var(--atom-accent);
+}
+.banner--warn {
+  border-bottom-color: var(--atom-warn);
+}
+.banner--warn > svg {
+  color: var(--atom-warn);
+}
+.banner--danger {
+  border-bottom-color: var(--atom-danger);
+}
+.banner--danger > svg {
+  color: var(--atom-danger);
+}
+.banner--success > svg {
+  color: var(--atom-success);
+}
+
+.banner__msg {
+  flex: 1;
+}
+
+.banner__actions {
+  display: flex;
+  flex: none;
+  gap: 0.4rem;
+}
+
+.banner__close {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--atom-radius-sm);
+  color: var(--atom-muted);
+}
+
+.banner__close:hover {
+  background: var(--atom-panel-hover);
+  color: var(--atom-ink);
+}
+
+/* View container: a fixed header bar over a scrolling body. The header never
+   scrolls and shares its height with .sidebar__brand via --atom-header-h. */
+.view {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.view__header {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  height: var(--atom-header-h);
+  padding: 0 1.75rem;
+  border-bottom: 1px solid var(--atom-line);
+}
+
+.view__scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 1.5rem 1.75rem;
+}
+
+.view__heading {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.view__heading svg {
+  width: 24px;
+  height: 24px;
+  color: var(--atom-accent);
+  flex: none;
+}
+
+.view__title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--atom-ink-bright);
+}
+
+.view__subtitle {
+  color: var(--atom-muted);
+  font-size: 0.8rem;
+  line-height: 1.25;
+}
+
+/* Neutral empty-state placeholder used by the scaffolded screens */
+.empty-state {
+  max-width: 30rem;
+  margin: 3.5rem auto 0;
+  text-align: center;
+}
+
+.empty-state__icon {
+  display: inline-grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: var(--atom-radius-lg);
+  background: var(--atom-panel);
+  border: 1px solid var(--atom-line);
+  color: var(--atom-ink-soft);
+  margin-bottom: 1rem;
+}
+
+.empty-state__icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.empty-state__title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--atom-ink-bright);
+}
+
+.empty-state__desc {
+  margin-top: 0.45rem;
+  color: var(--atom-ink-soft);
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+
+.empty-state__hint {
+  margin-top: 1rem;
+  color: var(--atom-muted);
+  font-family: var(--atom-font-mono);
+  font-size: 0.72rem;
+}
+
+/* --------------------------------------------------------------- Buttons -- */
+
+.view__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: none;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.5rem 0.9rem;
+  border-radius: var(--atom-radius-md);
+  border: 1px solid var(--atom-line-4);
+  background: var(--atom-panel);
+  color: var(--atom-ink);
+  font-weight: 600;
+  font-size: 0.85rem;
+  transition: background 0.12s ease, border-color 0.12s ease, opacity 0.12s ease;
+}
+
+.btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.btn:hover {
+  background: var(--atom-panel-hover);
+}
+
+.btn:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.btn--primary {
+  background: var(--atom-accent);
+  border-color: var(--atom-accent);
+  color: var(--atom-accent-ink);
+}
+
+.btn--primary:hover {
+  background: var(--atom-accent-hover);
+  border-color: var(--atom-accent-hover);
+}
+
+.btn--ghost {
+  background: transparent;
+}
+
+.btn--sm {
+  padding: 0.3rem 0.6rem;
+  font-size: 0.75rem;
+}
+
+/* Icon-only button (studio mic/camera toggles); the label lives in aria-label/title. */
+.btn--icon {
+  padding: 0.5rem;
+}
+
+/* Record is the one solid-danger control in the app; Stop is its outlined pair. */
+.btn--record {
+  background: var(--atom-danger);
+  border-color: var(--atom-danger);
+  color: var(--atom-danger-ink);
+}
+
+.btn--record:hover:not(:disabled) {
+  filter: brightness(1.1);
+}
+
+.btn--danger {
+  color: var(--atom-danger);
+}
+
+.btn--danger:hover:not(:disabled) {
+  border-color: var(--atom-danger);
+}
+
+.btn--record svg,
+.btn--danger svg {
+  fill: currentColor;
+}
+
+/* ----------------------------------------------------------- Setup screen -- */
+
+.setup {
+  max-width: 1000px;
+  margin-inline: auto;
+}
+
+.setup__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+@media (max-width: 720px) {
+  .setup__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  background: var(--atom-panel);
+  border: 1px solid var(--atom-line);
+  border-radius: var(--atom-radius-lg);
+  overflow: hidden;
+}
+
+.card__head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.7rem 0.9rem;
+  border-bottom: 1px solid var(--atom-line);
+}
+
+.card__head svg {
+  width: 16px;
+  height: 16px;
+  color: var(--atom-ink-soft);
+  flex: none;
+}
+
+.card__title {
+  flex: 1;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--atom-ink-bright);
+}
+
+.pill {
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  border: 1px solid var(--atom-line);
+  background: var(--atom-well);
+  color: var(--atom-ink-soft);
+  font-family: var(--atom-font-mono);
+  font-size: 0.68rem;
+  font-weight: 600;
+}
+
+.card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  padding: 0.9rem;
+}
+
+.card__note {
+  margin: 0;
+  color: var(--atom-ink-soft);
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+.card-empty {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  padding: 0.4rem 0;
+}
+
+/* Direct child only — see the .banner > svg note. The action buttons below the copy
+   carry their own icon color (white on the accent fill); a descendant selector would
+   mute them into their own background. */
+.card-empty > svg {
+  width: 20px;
+  height: 20px;
+  margin-top: 1px;
+  color: var(--atom-muted);
+  flex: none;
+}
+
+.card-empty__title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--atom-ink);
+}
+
+.card-empty__desc {
+  margin-top: 0.15rem;
+  color: var(--atom-muted);
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.card-empty__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.7rem;
+}
+
+.cam-preview,
+.thumb {
+  aspect-ratio: 16 / 9;
+  border-radius: var(--atom-radius-md);
+  border: 1px solid var(--atom-line);
+  overflow: hidden;
+}
+
+.cam-preview {
+  background: var(--atom-overlay-bg);
+}
+
+.cam-preview__slot,
+.cam-preview__video {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.cam-preview__video {
+  object-fit: cover;
+  background: var(--atom-well);
+  transform: scaleX(-1); /* mirror, selfie view */
+}
+
+.thumb {
+  display: grid;
+  place-items: center;
+  background: var(--atom-well);
+}
+
+.thumb__img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.thumb__blank {
+  color: var(--atom-muted);
+}
+
+.meter {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 44px;
+  padding: 0.4rem 0.3rem;
+  border-radius: var(--atom-radius-md);
+  border: 1px solid var(--atom-line);
+  background: var(--atom-well);
+}
+
+.meter__bar {
+  flex: 1;
+  min-height: 2px;
+  border-radius: 2px;
+  background: var(--atom-accent);
+  opacity: 0.85;
+  will-change: height;
+}
+
+.meter__status {
+  margin: 0.45rem 0 0.7rem;
+  font-size: 0.75rem;
+  color: var(--atom-muted);
+}
+
+.meter__status[data-tone='good'] {
+  color: var(--atom-success);
+}
+
+.meter__status[data-tone='warn'] {
+  color: var(--atom-warn);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.field__label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--atom-muted);
+}
+
+.field__control {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.select {
+  width: 100%;
+  padding: 0.5rem 2rem 0.5rem 0.7rem;
+  font: inherit;
+  font-size: 0.85rem;
+  color: var(--atom-ink);
+  background: var(--atom-well);
+  border: 1px solid var(--atom-line-4);
+  border-radius: var(--atom-radius-md);
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.select:hover {
+  border-color: var(--atom-accent);
+}
+
+.field__caret {
+  position: absolute;
+  right: 0.6rem;
+  top: 50%;
+  display: flex;
+  transform: translateY(-50%) rotate(90deg);
+  color: var(--atom-muted);
+  pointer-events: none;
+}
+
+.field__caret svg {
+  width: 14px;
+  height: 14px;
+}
+
+.setup__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 1.3rem;
+  padding-top: 1.1rem;
+  border-top: 1px solid var(--atom-line);
+}
+
+.setup__reassure {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin: 0;
+  color: var(--atom-muted);
+  font-size: 0.8rem;
+}
+
+.setup__reassure svg {
+  width: 14px;
+  height: 14px;
+  color: var(--atom-success);
+  flex: none;
+}
+
+/* No reduced-motion override for the meter: its bars are data, not decoration. Freezing
+   them would hide whether the microphone is capturing, which is the whole point. */
+
+/* ---------------------------------------------------------- Record studio -- */
+
+.empty-state__cta {
+  display: flex;
+  justify-content: center;
+  margin-top: 1.2rem;
+}
+
+.studio {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 1100px;
+  margin-inline: auto;
+}
+
+.studio__stage {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--atom-radius-lg);
+  border: 1px solid var(--atom-line);
+  background: var(--atom-stage-bg);
+  overflow: hidden;
+}
+
+.stage__slot,
+.stage__canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.stage__canvas {
+  object-fit: contain;
+}
+
+.stage__overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  background: var(--atom-overlay-bg);
+  color: var(--atom-overlay-ink); /* the overlay covers the always-dark stage */
+  font-size: 0.85rem;
+}
+
+.spinner {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid var(--atom-line-4);
+  border-top-color: var(--atom-accent);
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.status-pill {
+  position: absolute;
+  top: 0.7rem;
+  left: 0.7rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  background: var(--atom-overlay-bg);
+  border: 1px solid var(--atom-line-4);
+  color: var(--atom-ink-bright);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.status-pill__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--atom-muted);
+}
+
+.status-pill--preview .status-pill__dot {
+  background: var(--atom-success);
+}
+
+.status-pill--starting .status-pill__dot {
+  background: var(--atom-warn);
+}
+
+.status-pill--recording .status-pill__dot,
+.status-pill--paused .status-pill__dot {
+  background: var(--atom-danger);
+}
+
+.status-pill--recording .status-pill__dot {
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.studio__bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem;
+  border-radius: var(--atom-radius-lg);
+  border: 1px solid var(--atom-line);
+  background: var(--atom-panel);
+}
+
+.studio__bar-gap {
+  flex: 1;
+}
+
+.studio__transport {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.clock {
+  padding: 0 0.35rem;
+  min-width: 4rem;
+  font-family: var(--atom-font-mono);
+  font-size: 0.95rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--atom-ink-bright);
+}
+
+.btn.is-off {
+  color: var(--atom-muted);
+  border-style: dashed;
+}
+
+.studio__sources {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.studio__sources-action {
+  margin-left: auto;
+}
+
+.source-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 0;
+  padding: 0.3rem 0.6rem;
+  border-radius: 999px;
+  border: 1px solid var(--atom-line);
+  background: var(--atom-well);
+  font-size: 0.75rem;
+}
+
+.source-badge svg {
+  width: 14px;
+  height: 14px;
+  color: var(--atom-accent);
+  flex: none;
+}
+
+.source-badge__label {
+  color: var(--atom-muted);
+}
+
+.source-badge__value {
+  max-width: 16rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--atom-ink-bright);
+  font-weight: 600;
+}
+
+.source-badge.is-off svg,
+.source-badge.is-off .source-badge__value {
+  color: var(--atom-muted);
+  font-weight: 500;
+}
+
+/* Transient placeholder while navigateTo('record') kicks the preview off. */
+.studio-starting {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  margin-top: 3.5rem;
+  color: var(--atom-ink-soft);
+  font-size: 0.88rem;
+}
+
+.studio-error {
+  max-width: 34rem;
+  margin: 3rem auto 0;
+  text-align: center;
+}
+
+.studio-error__icon {
+  display: inline-grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  margin-bottom: 1rem;
+  border-radius: var(--atom-radius-lg);
+  border: 1px solid var(--atom-line);
+  background: var(--atom-panel);
+  color: var(--atom-danger);
+}
+
+.studio-error__icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.studio-error__title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--atom-ink-bright);
+}
+
+.studio-error__desc {
+  margin-top: 0.45rem;
+  color: var(--atom-ink-soft);
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+
+.studio-error__actions {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 1.2rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner,
+  .status-pill--recording .status-pill__dot {
+    animation: none;
+  }
+}
+
+/* ---------------------------------------------------------------- Toasts -- */
+
+.toast-slot {
+  position: fixed;
+  right: 1.1rem;
+  bottom: 1.1rem;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  width: min(340px, calc(100vw - 2.2rem));
+  pointer-events: none;
+}
+
+.toast {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  padding: 0.7rem 0.85rem;
+  border-radius: var(--atom-radius-md);
+  background: var(--atom-menu);
+  border: 1px solid var(--atom-line-4);
+  color: var(--atom-ink);
+  box-shadow: 0 8px 24px var(--atom-overlay-bg);
+  font-size: 0.85rem;
+  pointer-events: auto;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.toast.is-in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.toast.is-out {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+.toast__icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  margin-top: 1px;
+}
+
+.toast__icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.toast--good .toast__icon svg {
+  color: var(--atom-success);
+}
+.toast--warn .toast__icon svg {
+  color: var(--atom-warn);
+}
+.toast--danger .toast__icon svg {
+  color: var(--atom-danger);
+}
+.toast--info .toast__icon svg {
+  color: var(--atom-accent);
+}
+
+.toast__msg {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ------------------------------------------------------------- Layouts -- */
+
+/* The view fills the scrollport and the preset LIST scrolls inside its own column,
+   so browsing presets never scrolls the stage (and its live feed) out of sight. */
+.layouts {
+  display: grid;
+  grid-template-columns: minmax(220px, 300px) minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+  gap: 1.2rem;
+  max-width: 1100px;
+  margin-inline: auto;
+  height: 100%;
+  min-height: 0;
+}
+
+.layouts__presets {
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 0.5rem; /* breathing room between the cards and the scrollbar */
+}
+
+.layouts__editor {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  min-width: 0;
+  min-height: 0;
+  /* The editor holds still while presets scroll; it only scrolls itself when the
+     viewport is shorter than the stage plus its controls. */
+  overflow-y: auto;
+}
+
+.preset-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.preset {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  column-gap: 0.7rem;
+  align-items: center;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid var(--atom-line);
+  border-radius: var(--atom-radius-md);
+  background: var(--atom-panel);
+  text-align: left;
+  transition: background 0.12s ease, border-color 0.12s ease;
+}
+
+.preset:hover {
+  background: var(--atom-panel-hover);
+}
+
+.preset.is-active {
+  border-color: var(--atom-accent);
+  background: var(--atom-panel-hover);
+}
+
+.preset .mini {
+  grid-row: 1 / span 2;
+}
+
+.preset__label {
+  color: var(--atom-ink-bright);
+  font-size: 0.83rem;
+  font-weight: 600;
+}
+
+.preset__hint {
+  color: var(--atom-muted);
+  font-size: 0.74rem;
+  line-height: 1.35;
+}
+
+/* Preset thumbnail. Its boxes are positioned from the compositor's own geometry. */
+.mini {
+  position: relative;
+  display: block;
+  width: 64px;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--atom-radius-sm);
+  background: var(--atom-stage-bg);
+  overflow: hidden;
+}
+
+.mini__screen,
+.mini__camera {
+  position: absolute;
+}
+
+.mini__screen {
+  background: var(--atom-line-4);
+}
+
+.mini__camera {
+  background: var(--atom-accent);
+}
+
+/* The circle preset's mini is square in stage units, so 50% reads as a true circle. */
+.mini__camera--circle {
+  border-radius: 50%;
+}
+
+/* The editable stage: the same two boxes drawFrame composites, same z-order. */
+.layout-stage {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--atom-radius-lg);
+  border: 1px solid var(--atom-line);
+  background: var(--atom-stage-bg);
+  overflow: hidden;
+  touch-action: none; /* the drag owns the pointer */
+}
+
+.layout-stage__screen {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+
+.layout-stage__thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.layout-stage__blank {
+  color: var(--atom-muted);
+}
+
+.layout-stage__scrim {
+  position: absolute;
+  inset: 0;
+  background: var(--atom-stage-scrim);
+}
+
+.layout-stage__camera {
+  position: absolute;
+  overflow: hidden;
+  border: 1px solid var(--atom-accent);
+  border-radius: var(--atom-radius-sm);
+  background: var(--atom-accent-selection); /* shown until the live feed mounts */
+}
+
+/* The live feed, so the user frames what they are dragging (Requirements §3). */
+.layout-stage__camera .cam-preview__video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  /* drawFrame composites the camera unmirrored — a mirrored stage would misreport framing. */
+  transform: none;
+}
+
+/* Mirrors the compositor's circular clip; the box is pixel-square on the 16:9 stage. */
+.layout-stage__camera--circle {
+  border-radius: 50%;
+}
+
+/* A corner-anchored tag falls outside the circular clip; bottom-center stays inside. */
+.layout-stage__camera--circle .layout-stage__tag {
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.layout-stage__camera.is-movable {
+  cursor: grab;
+}
+
+.layout-stage__camera.is-movable:active {
+  cursor: grabbing;
+}
+
+/* Mirrors the outline the compositor strokes around the camera. */
+.layout-stage__camera.has-border {
+  box-shadow: inset 0 0 0 2px var(--atom-camera-outline);
+}
+
+/* Corner-anchored, not centred: it must not sit over the face in the live feed. */
+.layout-stage__tag {
+  position: absolute;
+  left: 0.35rem;
+  bottom: 0.35rem;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.45rem;
+  border-radius: var(--atom-radius-sm);
+  background: var(--atom-overlay-bg);
+  color: var(--atom-overlay-ink);
+  font-size: 0.7rem;
+  font-weight: 600;
+  pointer-events: none;
+}
+
+.layout-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--atom-line);
+  border-radius: var(--atom-radius-md);
+  background: var(--atom-panel);
+}
+
+.layout-control {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.layout-control__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  color: var(--atom-ink);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.layout-control__value {
+  color: var(--atom-ink-soft);
+  font-family: var(--atom-font-mono);
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.layout-control__row {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  flex-wrap: wrap;
+}
+
+.layout-control__note {
+  color: var(--atom-muted);
+  font-size: 0.74rem;
+}
+
+.range {
+  width: 100%;
+  accent-color: var(--atom-accent);
+}
+
+.range:disabled {
+  opacity: 0.5;
+}
+
+.btn.is-active {
+  border-color: var(--atom-accent);
+  color: var(--atom-ink-bright);
+}
+
+/* The in-studio live panel, floated over the stage. */
+.studio__stage-wrap {
+  position: relative;
+}
+
+.layout-panel {
+  position: absolute;
+  top: 0.7rem;
+  right: 0.7rem;
+  z-index: 1;
+  width: min(310px, calc(100% - 1.4rem));
+  max-height: calc(100% - 1.4rem);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  padding: 0.8rem;
+  border: 1px solid var(--atom-line-4);
+  border-radius: var(--atom-radius-md);
+  background: var(--atom-menu);
+}
+
+.layout-panel__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.layout-panel__title {
+  color: var(--atom-ink-bright);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.layout-panel .layout-controls {
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.preset-grid--compact .preset {
+  grid-template-rows: auto;
+  padding: 0.4rem 0.5rem;
+}
+
+.preset-grid--compact .mini {
+  width: 48px;
+}
+
+.preset-grid--compact .preset .mini {
+  grid-row: 1;
+}
+
+@media (max-width: 900px) {
+  /* One column: the stage pins on top, the preset list scrolls in the space below
+     (never collapsing past 8rem), so the live preview stays put on small screens. */
+  .layouts {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(8rem, 1fr);
+  }
+
+  .layouts__editor {
+    order: -1;
+    overflow-y: visible;
+  }
+}
+
+/* -------------------------------------------------------- Settings screen -- */
+
+.settings__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.9rem;
+}
+
+.settings__row .field {
+  flex: 1 1 9rem;
+  min-width: 0;
+}
+
+.settings__stat {
+  margin: 0 0 0.3rem;
+  font-size: 0.85rem;
+  color: var(--atom-ink);
+}
+
+.settings__stat strong {
+  color: var(--atom-ink-bright);
+  font-weight: 600;
+}
+
+/* --------------------------------------------------- Recordings library -- */
+
+.library {
+  display: grid;
+  grid-template-columns: minmax(320px, 420px) minmax(0, 1fr);
+  gap: 1.2rem;
+  align-items: start;
+  max-width: 1100px;
+  margin-inline: auto;
+}
+
+.library__list-pane {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  border: 1px solid var(--atom-line);
+  border-radius: var(--atom-radius-md);
+  background: var(--atom-panel);
+  overflow: hidden;
+}
+
+.library__toolbar {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border-bottom: 1px solid var(--atom-line);
+}
+
+.library__toolbar .field {
+  flex: 0 0 auto;
+}
+
+.library__confirm {
+  align-self: center;
+  font-size: 0.82rem;
+  color: var(--atom-ink-soft);
+}
+
+/* Search */
+
+.search {
+  position: relative;
+  display: flex;
+  flex: 1 1 auto;
+  min-width: 0;
+  align-items: center;
+}
+
+.search__icon {
+  position: absolute;
+  left: 0.55rem;
+  display: flex;
+  color: var(--atom-muted);
+  pointer-events: none;
+}
+
+.search__input {
+  width: 100%;
+  padding: 0.45rem 0.6rem 0.45rem 1.9rem;
+  font: inherit;
+  font-size: 0.85rem;
+  color: var(--atom-ink);
+  background: var(--atom-well);
+  border: 1px solid var(--atom-line-4);
+  border-radius: var(--atom-radius-sm);
+}
+
+.search__input::placeholder {
+  color: var(--atom-muted);
+}
+
+.search__input:focus-visible {
+  outline: none;
+  border-color: var(--atom-accent);
+  box-shadow: 0 0 0 3px var(--atom-focus-glow);
+}
+
+/* Rows */
+
+.rec-list {
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: 60vh;
+  margin: 0;
+  padding: 0.35rem;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.rec-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0 0.25rem;
+  border-radius: var(--atom-radius-sm);
+}
+
+.rec-item:hover {
+  background: var(--atom-panel-hover);
+}
+
+.rec-item.is-active {
+  background: var(--atom-accent-selection);
+}
+
+.rec-item__check {
+  flex: 0 0 auto;
+  accent-color: var(--atom-accent);
+}
+
+.rec-row {
+  display: flex;
+  flex: 1 1 auto;
+  min-width: 0;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.5rem 0.35rem;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  background: none;
+  border: 0;
+  border-radius: var(--atom-radius-sm);
+  cursor: pointer;
+}
+
+.rec-row:focus-visible {
+  outline: 2px solid var(--atom-accent);
+  outline-offset: -2px;
+}
+
+.rec-row__thumb {
+  flex: 0 0 auto;
+  width: 72px;
+}
+
+.rec-row__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.rec-row__title {
+  overflow: hidden;
+  font-size: 0.87rem;
+  color: var(--atom-ink-bright);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rec-row__sub {
+  font-size: 0.75rem;
+  color: var(--atom-muted);
+}
+
+.library__footer {
+  display: flex;
+  gap: 0.4rem;
+  padding: 0.6rem 0.85rem;
+  font-size: 0.75rem;
+  color: var(--atom-muted);
+  border-top: 1px solid var(--atom-line);
+}
+
+/* Detail pane */
+
+.library__detail {
+  min-width: 0;
+  padding: 1rem;
+  border: 1px solid var(--atom-line);
+  border-radius: var(--atom-radius-md);
+  background: var(--atom-panel);
+}
+
+.player {
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: var(--atom-player-bg);
+  border: 1px solid var(--atom-line);
+  border-radius: var(--atom-radius-md);
+}
+
+.player__video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.player--failed {
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: var(--atom-well);
+}
+
+.player__failure {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  max-width: 28rem;
+  color: var(--atom-danger);
+  text-align: center;
+}
+
+.player__failure-text {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--atom-ink-soft);
+}
+
+.player__title {
+  margin: 0.9rem 0 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--atom-ink-bright);
+}
+
+.player__facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.7rem 1.2rem;
+  margin: 0.9rem 0 0;
+}
+
+.player__facts dt {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--atom-muted);
+}
+
+.player__facts dd {
+  margin: 0.15rem 0 0;
+  font-size: 0.82rem;
+  color: var(--atom-ink);
+  overflow-wrap: anywhere;
+}
+
+/* Export panel */
+
+.export {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  margin-top: 1.3rem;
+  padding-top: 1.2rem;
+  border-top: 1px solid var(--atom-line);
+}
+
+.export__title {
+  margin: 0 0 0.7rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--atom-muted);
+}
+
+.export__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.75rem;
+}
+
+.export__note {
+  margin: 0.6rem 0 0;
+  font-size: 0.75rem;
+  color: var(--atom-muted);
+}
+
+.export__progress {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin: 0.7rem 0 0;
+  font-size: 0.8rem;
+  color: var(--atom-ink-soft);
+}
+
+.export__captions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.55rem;
+  margin: 0.8rem 0 0;
+  font-size: 0.8rem;
+  color: var(--atom-ink-soft);
+}
+
+.export__captions svg {
+  color: var(--atom-success);
+}
+
+.export__captions code {
+  font-family: var(--atom-font-mono);
+  font-size: 0.76rem;
+  color: var(--atom-ink);
+}
+
+@media (max-width: 980px) {
+  .library {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* ------------------------------------------------------ Reduced motion -- */
+
+@media (prefers-reduced-motion: reduce) {
+  .toast,
+  .nav-item,
+  .preset {
+    transition: none;
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "runtimes": [
+    {
+      "id": "ffmpeg",
+      "reason": "Transcode the recorded WebM to true H.264 MP4 on export, and extract mono 16k WAV audio from a recording before Whisper captioning, via window.tinyAtom.media.runFfmpeg."
+    },
+    {
+      "id": "ffprobe",
+      "reason": "Read duration, resolution, and stream info of persisted recordings for accurate library metadata and export validation, via window.tinyAtom.media.runFfprobe."
+    },
+    {
+      "id": "whisper-cli",
+      "reason": "Generate real auto-captions (VTT/SRT/JSON) from a recording's extracted audio via window.tinyAtom.speech.transcribe."
+    },
+    {
+      "id": "whisper-model",
+      "reason": "Local Whisper model weights required by whisper-cli for offline transcription via window.tinyAtom.speech.transcribe."
+    }
+  ]
+}

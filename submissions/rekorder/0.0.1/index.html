@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Rekorder</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <!-- The app shell (sidebar + main) is rendered by app.js into #app. -->
+    <div id="app" class="app" aria-busy="true">
+      <noscript>Rekorder needs JavaScript to run.</noscript>
+    </div>
+
+    <!-- Transient toasts float above the app; managed imperatively, outside the render loop. -->
+    <div id="toast-slot" class="toast-slot" role="region" aria-label="Notifications" aria-live="polite"></div>
+
+    <script type="module" src="app.js"></script>
+  </body>
+</html>

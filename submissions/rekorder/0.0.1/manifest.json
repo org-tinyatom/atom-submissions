@@ -1,0 +1,18 @@
+{
+  "id": "rekorder",
+  "name": "Rekorder",
+  "version": "0.0.1",
+  "entry": "index.html",
+  "capabilities": [
+    "clipboard",
+    "external-links",
+    "filesystem",
+    "storage",
+    "camera",
+    "microphone",
+    "screen-capture",
+    "media",
+    "speech"
+  ],
+  "distribution": "public"
+}
